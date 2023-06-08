@@ -1,7 +1,10 @@
 package main
 
 import (
-	"net/http"
+	"fauzanbintang/alfath/controllers"
+	"fauzanbintang/alfath/db"
+	"fauzanbintang/alfath/domain/repository"
+	"fauzanbintang/alfath/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,13 +12,19 @@ import (
 func main() {
 	r := gin.Default()
 
-	r.Group("/users")
+	dbInstance := db.InitDB()
+	defer dbInstance.Close()
+
+	rp := repository.InitRepositoryInstance()
+
+	userSrv := services.NewUserService(rp.User)
+	userCtl := controllers.NewUserController(userSrv)
+
+	users := r.Group("/users")
 	{
-		r.GET("", func(ctx *gin.Context) {
-			ctx.JSON(http.StatusOK, gin.H{
-				"msg": "successfully get users",
-			})
-		})
+		users.GET("", userCtl.GetAll)
+		users.POST("register", userCtl.Register)
+		users.GET(":id", userCtl.GetDetail)
 	}
 
 	r.Run(":3000")

@@ -15,6 +15,7 @@ type UserController interface {
 	GetAll(ctx *gin.Context)
 	GetDetail(ctx *gin.Context)
 	Register(ctx *gin.Context)
+	Login(ctx *gin.Context)
 }
 
 type userController struct {
@@ -74,7 +75,7 @@ func (ctl *userController) GetDetail(ctx *gin.Context) {
 }
 
 func (ctl *userController) Register(ctx *gin.Context) {
-	var req requests.RegisterUser
+	var req requests.UserForm
 
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -108,5 +109,38 @@ func (ctl *userController) Register(ctx *gin.Context) {
 		"code":    http.StatusCreated,
 		"message": "Successfully create data",
 		"data":    res,
+	})
+}
+
+func (ctl *userController) Login(ctx *gin.Context) {
+	var req requests.UserForm
+
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error bind json",
+			"error":   err,
+		})
+
+		return
+	}
+
+	tokenStr, err := ctl.userSrv.Login(ctx, &req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error",
+			"error":   err,
+		})
+		return
+	}
+
+	// set cookie
+	ctx.SetSameSite(http.SameSiteLaxMode)
+	ctx.SetCookie("Auth", tokenStr, 3600*24*30, "", "", false, true)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"code":    http.StatusCreated,
+		"message": "Successfully login",
+		"data":    "",
 	})
 }

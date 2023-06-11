@@ -6,9 +6,13 @@ import (
 	"fauzanbintang/alfath/db"
 	"fauzanbintang/alfath/domain"
 	"fauzanbintang/alfath/domain/repository"
+	"fauzanbintang/alfath/dto/requests"
 	"fauzanbintang/alfath/dto/responses"
+	"fmt"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/jinzhu/copier"
 	"github.com/uptrace/bun"
 	"golang.org/x/crypto/bcrypt"
@@ -18,6 +22,7 @@ type UserService interface {
 	GetAll(ctx *gin.Context, src *[]domain.User) (res []responses.UserDetail, err error)
 	GetDetail(ctx *gin.Context, src *domain.User, id int64) (res responses.UserDetail, err error)
 	Register(ctx *gin.Context, src *domain.User) (res responses.UserDetail, err error)
+	Login(ctx *gin.Context, req *requests.UserForm) (tokenStr string, err error)
 }
 
 type userService struct {
@@ -78,6 +83,32 @@ func (srv *userService) Register(ctx *gin.Context, src *domain.User) (res respon
 		if err = copier.Copy(&res, src); err != nil {
 			return err
 		}
+
+		return nil
+	}); err != nil {
+		return
+	}
+
+	return
+}
+
+func (srv *userService) Login(ctx *gin.Context, req *requests.UserForm) (tokenStr string, err error) {
+	if db.GetConn().RunInTx(ctx, &sql.TxOptions{}, func(c context.Context, tx bun.Tx) error {
+		var userDomain domain.User
+		if err = srv.userRepo.GetByEmail(ctx, &userDomain, req.Email); err != nil {
+			return err
+		}
+
+		if err = bcrypt.CompareHashAndPassword([]byte(userDomain.Password), []byte(req.Password)); err != nil {
+			return err
+		}
+
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"sub": fmt.Sprint(userDomain.ID),
+			"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
+		})
+
+		tokenStr, err = token.SignedString([]byte("AllYourBase"))
 
 		return nil
 	}); err != nil {

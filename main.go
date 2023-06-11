@@ -4,6 +4,7 @@ import (
 	"fauzanbintang/alfath/controllers"
 	"fauzanbintang/alfath/db"
 	"fauzanbintang/alfath/domain/repository"
+	"fauzanbintang/alfath/middlewares"
 	"fauzanbintang/alfath/services"
 
 	"github.com/gin-gonic/gin"
@@ -23,7 +24,8 @@ func main() {
 	users := r.Group("/users")
 	{
 		users.GET("", userCtl.GetAll)
-		users.POST("register", userCtl.Register)
+		users.POST("register", middlewares.RequireAuth, userCtl.Register)
+		users.POST("login", userCtl.Login)
 		users.GET(":id", userCtl.GetDetail)
 	}
 

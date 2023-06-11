@@ -1,6 +1,6 @@
 package requests
 
-type RegisterUser struct {
+type UserForm struct {
 	Email    string
 	Password string
 }

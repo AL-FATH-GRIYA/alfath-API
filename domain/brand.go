@@ -9,10 +9,10 @@ import (
 
 type Brand struct {
 	bun.BaseModel
-	ID        int64     `bun:"id,pk,autoincrement"`
-	Name      string    `bun:"name,unique"`
-	CreatedAt time.Time `bun:"created_at"`
-	UpdatedAt time.Time `bun:"updated_at"`
+	ID        int64     `bun:"id,pk,autoincrement" json:"id"`
+	Name      string    `bun:"name,unique" json:"name"`
+	CreatedAt time.Time `bun:"created_at" json:"created_at"`
+	UpdatedAt time.Time `bun:"updated_at" json:"updated_at"`
 }
 
 func (m *Brand) BeforeAppendModel(ctx context.Context, query bun.Query) error {

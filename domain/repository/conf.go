@@ -1,11 +1,13 @@
 package repository
 
 type repositoryPool struct {
-	User UserRepository
+	User  UserRepository
+	Brand BrandRepository
 }
 
 func InitRepositoryInstance() *repositoryPool {
 	return &repositoryPool{
-		User: NewUserRepository(),
+		User:  NewUserRepository(),
+		Brand: NewBrandRepository(),
 	}
 }

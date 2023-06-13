@@ -41,7 +41,6 @@ func RequireAuth(ctx *gin.Context) {
 			Where("id = ?", claims["sub"]).
 			Scan(ctx)
 		if err != nil {
-			fmt.Println("error", err)
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 		}
 

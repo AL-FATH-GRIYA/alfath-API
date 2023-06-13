@@ -24,6 +24,9 @@ func main() {
 	brandSrv := services.NewBrandService(rp.Brand)
 	brandCtl := controllers.NewBrandController(brandSrv)
 
+	branchSrv := services.NewBranchService(rp.Branch)
+	branchCtl := controllers.NewBranchController(branchSrv)
+
 	users := r.Group("/users")
 	{
 		users.GET("", userCtl.GetAll)
@@ -39,6 +42,15 @@ func main() {
 		brands.GET(":id", middlewares.RequireAuth, brandCtl.GetDetail)
 		brands.PUT(":id", middlewares.RequireAuth, brandCtl.Update)
 		brands.DELETE(":id", middlewares.RequireAuth, brandCtl.Delete)
+	}
+
+	branches := r.Group("/branches")
+	{
+		branches.GET("", middlewares.RequireAuth, branchCtl.GetAll)
+		branches.POST("", middlewares.RequireAuth, branchCtl.Create)
+		branches.GET(":id", middlewares.RequireAuth, branchCtl.GetDetail)
+		branches.PUT(":id", middlewares.RequireAuth, branchCtl.Update)
+		branches.DELETE(":id", middlewares.RequireAuth, branchCtl.Delete)
 	}
 
 	r.Run(":3000")
